@@ -6,13 +6,20 @@ BoardManager::BoardManager()
 {
 	puzzle = new Puzzle(1);
 	path = new vector<Puzzle*>();
+	seenPuzzles = new vector<Puzzle*>();
 }
 
 BoardManager::~BoardManager()
 {
 	delete puzzle;
+
+	for (int i = 0; i < path->size(); i++) delete (*path)[i];
 	delete path;
 	delete[] finalPath;
+
+	delete current;
+	for (int i = 0; i < seenPuzzles->size(); i++) delete (*seenPuzzles)[i];
+	delete seenPuzzles;
 }
 #pragma endregion
 
@@ -37,6 +44,7 @@ void BoardManager::DisplayPuzzle() {
 
 //Algorithm stuff
 void BoardManager::SolveAStar() {
+	path->clear();
 	AStarPath(puzzle);
 	for (int i = 0; i < finalPathLength; i++) {
 		int move = finalPath[i];
@@ -45,19 +53,31 @@ void BoardManager::SolveAStar() {
 		DisplayPuzzle();
 	}
 }
+void BoardManager::SolveHill() {
+	path->clear();
+	seenPuzzles->clear();
+	if (HillPath()) {
+		for (int i = 0; i < finalPathLength; i++) {
+			int move = finalPath[i];
+			cout << "Move tile " << puzzle->board[finalPath[i]]->number << endl;
+			MakeMove(move);
+			DisplayPuzzle();
+		}
+	}
+	else cout << "Unable to find path with hill-climbing." << endl;
+}
+
 void BoardManager::SetShortestPath()
 {
-	if (pathLength > finalPathLength) return;
-
 	if (finalPath != nullptr) //Deletes previous shortest path if it exists
 	{
 		delete[] finalPath;
 	}
 	//Creates and populates array with coordinates of path's vertices
-	finalPathLength = pathLength;
+	finalPathLength = path->size() - 1;
 	finalPath = new int[finalPathLength];
-	for (int i = 1; i < pathLength; i++) { //i=1 is so finalPath doesn't include the starting board - that's still stored in puzzle.
-		Puzzle stepBoard = *(*path)[i];
+	for (int i = 0; i < finalPathLength; i++) {
+		Puzzle stepBoard = *(*path)[i + 1];
 		finalPath[i] = stepBoard.emptyIndex;
 	}
 }
@@ -68,20 +88,18 @@ int BoardManager::AStarPath(Puzzle* move)
 {
 	move->Display();
 	Vertex* vertex = move->GetEmpty();
-	if ((*vertex).visited > pathLength - 3) { //Spot has been empty in the last three moves (only possible if it was just moved into or a square is about to be made)
+	if ((*vertex).visited > path->size() - 3) { //Spot has been empty in the last three moves (only possible if it was just moved into or a square is about to be made)
 		return INT_MAX;
 	}
 	//Add vertex to path
-	(*path).push_back(move);
-	pathLength++;
+	path->push_back(move);
 	//cout << CheckProgress(path->back()) << endl;
 	if (CheckProgress(path->back()) == 0) { //Reached end
 		SetShortestPath();
 		(*path).pop_back();
-		pathLength--;
-		return pathLength;
+		return path->size();
 	}
-	(*vertex).visited = pathLength;
+	(*vertex).visited = path->size();
 	//Recursively finds next step, in order of distance from the endpoint
 	int curPath = INT_MAX;
 	int shortPath = INT_MAX;
@@ -94,8 +112,32 @@ int BoardManager::AStarPath(Puzzle* move)
 	//Clean-up
 	delete neighbors;
 	(*path).pop_back();
-	pathLength--;
 	return shortPath;
+}
+bool BoardManager::HillPath() {
+	path->push_back(puzzle);
+	while (path->size() > 0) {
+		current = path->back();
+		//current->Display();
+		//cout << CheckProgress(current) << endl;
+		if (CheckProgress(current) == 0) { //Reached end
+			SetShortestPath();
+			return true;
+		}
+		seenPuzzles->push_back(current);
+		bool hasNew = false;
+		vector<Puzzle*>* neighbors = AdjacencyDistances(current);
+		for (int i = neighbors->size() - 1; i >= 0; i--) {
+			Puzzle* neighbor = (*neighbors)[i];
+			if (NotRepeat(neighbor)) {
+				path->push_back(neighbor);
+				hasNew = true;
+			}
+		}
+		delete neighbors;
+		if (!hasNew) path->pop_back();
+	}
+	return false;
 }
 
 //Calculates the closeness of each move into the empty position and returns it
@@ -125,7 +167,7 @@ void BoardManager::MakeMove(int moveIndex) { //Wrapper function lel
 Puzzle* BoardManager::SimulateMove(Puzzle* moveBoard, int moveIndex) {
 	Puzzle* newPuzzle = new Puzzle(*moveBoard);
 	newPuzzle->GetEmpty()->number = newPuzzle->board[moveIndex]->number;
-	newPuzzle->board[moveIndex]->number = 16;
+	newPuzzle->board[moveIndex]->number = newPuzzle->boardSize;
 	newPuzzle->emptyIndex = moveIndex;
 	return newPuzzle;
 }
@@ -141,5 +183,15 @@ int CheckProgress(Puzzle* checkBoard) {
 		closeness += abs(checkBoard->board[i]->number - i - 1) / checkBoard->sideLength + abs(checkBoard->board[i]->number - i - 1) % checkBoard->sideLength;
 	}
 	return closeness;
+}
+bool BoardManager::NotRepeat(Puzzle* checkBoard) {
+	for (int i = 0; i < seenPuzzles->size(); i++) {
+		Puzzle* config = (*seenPuzzles)[i];
+		for (int j = 0; j < checkBoard->boardSize; j++) {
+			if (checkBoard->board[j]->number != config->board[j]->number) break;
+			if (j == checkBoard->boardSize - 1) return false; //Hit all values without finding a difference
+		}
+	}
+	return true;
 }
 #pragma endregion

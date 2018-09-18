@@ -54,17 +54,21 @@ Puzzle& Puzzle::operator= (const Puzzle& other)
 }
 
 void Puzzle::Display() {
-	cout << "-------------" << endl;
+	for (int i = 0; i < sideLength * 3 + 1; i++) cout << "-";
+	cout << endl;
 	for (int i = 0; i < boardSize; i += sideLength) {
 		for (int j = 0; j < sideLength; j++) {
 			cout << "|";
-			if (board[i + j]->number < 10) cout << " ";
 			if (board[i + j]->number == boardSize) cout << "  ";
-			else cout << board[i + j]->number;
+			else {
+				if (board[i + j]->number < 10) cout << " ";
+				cout << board[i + j]->number;
+			}
 		}
 		cout << "|" << endl;
 	}
-	cout << "-------------" << endl;
+	for (int i = 0; i < sideLength * 3 + 1; i++) cout << "-";
+	cout << endl;
 }
 Vertex* Puzzle::GetEmpty() {
 	return board[emptyIndex];

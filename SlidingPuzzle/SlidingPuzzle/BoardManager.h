@@ -26,19 +26,22 @@ private:
 	Puzzle* puzzle = nullptr;
 	//Solving variables
 	vector<Puzzle*>* path = nullptr;
-	int pathLength = 0;
 	int* finalPath = nullptr;
 	int finalPathLength = INT_MAX;
+	//Hill-climbing variables
+	Puzzle* current;
+	vector<Puzzle*>* seenPuzzles;
 	#pragma endregion
 
 	#pragma region Algorithms
-	int HillPath(); //Hill-climbing iterative function
 	int AStarPath(Puzzle* move); //A* recursive function
+	bool HillPath(); //Hill-climbing iterative function
 	//Helper functions
 	void MakeMove(int moveIndex);
 	Puzzle* SimulateMove(Puzzle* moveBoard, int moveIndex);
 
 	vector<Puzzle*>* AdjacencyDistances(Puzzle* move); //Returns a sorted list of possible moves using the distance heuristic
+	bool NotRepeat(Puzzle* checkBoard);
 	void SetShortestPath();
 	#pragma endregion
 };
