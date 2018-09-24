@@ -6,41 +6,46 @@
 
 #include "Puzzle.h"
 
-#include <iostream>
-#include <stdio.h>
-using namespace std;
-
 class BoardManager
 {
 public:
 	BoardManager();
 	~BoardManager();
 
-	#pragma region Variables
-	Puzzle* puzzle;
-	//Solving variables
-	vector<Vertex*>* path = nullptr;
-	int pathLength = 0;
-	int* finalPath = nullptr;
-	int finalPathLength = INT_MAX;
-	#pragma endregion
-
 	#pragma region Functions
 	void SetPuzzle(int dimension);
 	void ScramblePuzzle();
 	void DisplayPuzzle();
-	void SetShortestPath();
+
+	void SolveAStar();
+	void SolveHill();
 	#pragma endregion
 private:
+
+	#pragma region Variables
+	Puzzle* puzzle = nullptr;
+	//Solving variables
+	vector<Puzzle*>* path = nullptr;
+	int* finalPath = nullptr;
+	int finalPathLength = INT_MAX;
+	//Hill-climbing variables
+	Puzzle* current;
+	vector<Puzzle*>* seenPuzzles;
+	#pragma endregion
+
 	#pragma region Algorithms
-	int HillPath(); //Hill-climbing iterative function
-	int AStarPath(int index); //A* recursive function
+	int AStarPath(Puzzle* move); //A* recursive function
+	bool HillPath(); //Hill-climbing iterative function
 	//Helper functions
-	Puzzle SimulateMove(int moveIndex);
-	vector<Puzzle> AdjacencyDistances(int index); //Returns a sorted list of possible moves using the distance heuristic
+	void MakeMove(int moveIndex);
+	Puzzle* SimulateMove(Puzzle* moveBoard, int moveIndex);
+
+	vector<Puzzle*>* AdjacencyDistances(Puzzle* move); //Returns a sorted list of possible moves using the distance heuristic
+	bool NotRepeat(Puzzle* checkBoard);
+	void SetShortestPath();
 	#pragma endregion
 };
 
-bool sortMove(const Puzzle a, const Puzzle b); //Function that compares two heuristic values to find the lowest
-int CheckProgress(Puzzle checkBoard);
+bool sortMove(Puzzle* const a, Puzzle* const b); //Function that compares two heuristic values to find the lowest
+int CheckProgress(Puzzle* checkBoard);
 

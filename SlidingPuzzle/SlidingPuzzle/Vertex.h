@@ -2,11 +2,12 @@
 class Vertex
 {
 public:
-	Vertex(int index, int value);
+	Vertex(int value);
 	~Vertex();
+	Vertex(const Vertex& other);
+	Vertex& operator= (const Vertex& other); //Copy constructor
 
 	//Variables
-	int position;
 	int number;
 	int visited; //Tracks which move number it was last visited
 };
