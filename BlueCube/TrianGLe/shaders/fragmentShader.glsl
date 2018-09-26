@@ -1,5 +1,5 @@
 /*
-This is the fragment shader, and it's main job is to determine the color for each pixel (fragment)
+This is the fragment shader, and its main job is to determine the color for each pixel (fragment)
 */
 
 //specifies the version of the shader (and what features are enabled)
@@ -10,6 +10,5 @@ out vec4 color;
 //entry point for the fragment shader
 void main(void)
 {
-	// sets the output (color) to red
-	color = vec4(1, 0, 0, 1);
+	color = vec4(0, 0, 1, 1);
 }

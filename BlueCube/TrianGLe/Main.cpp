@@ -3,6 +3,7 @@
 ///Based on the tutorial made in ATLAS.
 
 #pragma region variables
+//Window data
 const GLint WIDTH = 640, HEIGHT = 320;
 GLuint vao;
 GLuint vbo;
@@ -11,12 +12,12 @@ GLuint colorbuffer;
 //Cube data
 const GLfloat VERTICES = 36;
 static const GLfloat g_vertex_buffer_data[] = {
-	-1.0f,-1.0f,-1.0f, // triangle 1 : begin
-	-1.0f,-1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f, // triangle 1 : end
-	1.0f, 1.0f,-1.0f, // triangle 2 : begin
 	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f, // triangle 2 : end
+	-1.0f,-1.0f, 1.0f,
+	-1.0f, 1.0f, 1.0f,
+	1.0f, 1.0f,-1.0f,
+	-1.0f,-1.0f,-1.0f,
+	-1.0f, 1.0f,-1.0f,
 	1.0f,-1.0f, 1.0f,
 	-1.0f,-1.0f,-1.0f,
 	1.0f,-1.0f,-1.0f,
@@ -46,54 +47,51 @@ static const GLfloat g_vertex_buffer_data[] = {
 	-1.0f, 1.0f, 1.0f,
 	1.0f, 1.0f, 1.0f,
 	-1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f
+	1.0f,-1.0f, 1.0f,
 };
-
-
 #pragma endregion
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
 
 int main() {
 	//Initializes the GLFW
-	glfwInit();
+	if (glfwInit() == GLFW_FALSE)
+	{
+		std::cout << "GLFW failed to initialize" << std::endl;
+		std::cin.get();
+		_CrtDumpMemoryLeaks();
+		return 1;
+	}
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	//GLFW creation
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Create Window Tutorial", nullptr, nullptr); glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "A Cube", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return EXIT_FAILURE;
 	}
-
 	glfwMakeContextCurrent(window);
+	glViewport(0, 0, WIDTH, HEIGHT);
 
 	//GLEW
 	glewExperimental = GL_TRUE;
-	if (GLEW_OK != glewInit())
+	if (glewInit() != GLEW_OK)
 	{
 		std::cout << "Failed to initialize GLEW" << std::endl;
 
 		return EXIT_FAILURE;
 	}
-	glewInit();
 
 	//Shaders
 	GLuint shaderProgram = glCreateProgram();
 	//Vertex Shader
 	Shader *vs = new Shader();
-	vs->InitFromFile("assets/shaders/vertexShader.glsl", GL_VERTEX_SHADER);
+	vs->InitFromFile("shaders/vertexShader.glsl", GL_VERTEX_SHADER);
 	glAttachShader(shaderProgram, vs->GetShaderLoc());
 	//Fragment Shader
 	Shader *fs = new Shader();
-	fs->InitFromFile("assets/shaders/fragmentShader.glsl", GL_FRAGMENT_SHADER);
+	fs->InitFromFile("shaders/fragmentShader.glsl", GL_FRAGMENT_SHADER);
 	glAttachShader(shaderProgram, fs->GetShaderLoc());
 
 	glLinkProgram(shaderProgram);
@@ -102,12 +100,19 @@ int main() {
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	GLuint attribIndex = glGetAttribLocation(shaderProgram, "position");
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, VERTICES * 3, &g_vertex_buffer_data[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(attribIndex, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (GLvoid*)0);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+	GLuint attribIndex = glGetAttribLocation(shaderProgram, "position");
+	glVertexAttribPointer(attribIndex, VERTICES, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
 	glEnableVertexAttribArray(attribIndex);
+	
+	//cleanup
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	delete fs;
+	delete vs;
 	
 	while (!glfwWindowShouldClose(window)) //Draw loop
 	{
@@ -120,14 +125,16 @@ int main() {
 		glClearColor(.25f, 0.7f, 0.6f, 1.0f);
 
 		//Draws and shade
+		glUseProgram(shaderProgram);
 		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, VERTICES*3);
-		glDisableVertexAttribArray(attribIndex);
-		glfwSwapBuffers(window);
+		glDrawArrays(GL_TRIANGLES, 0, VERTICES);
 
 		//'clear' for next draw call
+		//glDisableVertexAttribArray(attribIndex);
 		glBindVertexArray(0);
 		glUseProgram(0);
+
+		glfwSwapBuffers(window);
 	}
 	//Cleanup
 	glDeleteBuffers(1, &vbo);
