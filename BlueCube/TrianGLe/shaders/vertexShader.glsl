@@ -8,8 +8,21 @@ This is the vertex shader
 // vertex attribute for position (loc = 0)
 in vec3 position;
 
+//Shaders
+uniform mat4 modelToWorld;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+
 //entry point for the vertex shader
 void main(void)
 {
-	gl_Position = vec4(position, 1.0);
+	vec4 worldPos = vec4(position, 1.0);
+
+	//move it to the world coordinates
+	worldPos = modelToWorld * worldPos;
+
+	//apply our camera matrcies to bring it to screen space
+	worldPos = viewMatrix * worldPos;
+	worldPos = projectionMatrix * worldPos;
+	gl_Position = worldPos;
 }

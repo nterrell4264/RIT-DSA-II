@@ -7,7 +7,7 @@
 
 #pragma region variables
 //Window data
-const GLint WIDTH = 640, HEIGHT = 320;
+const GLint WIDTH = 800, HEIGHT = 600;
 GLuint vao;
 GLuint vbo;
 GLuint colorbuffer;
@@ -116,7 +116,7 @@ int main() {
 	
 	//
 	GLuint attribIndex = glGetAttribLocation(shaderProgram, "position");
-	glVertexAttribPointer(attribIndex, VERTICES, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
+	glVertexAttribPointer(attribIndex, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
 	glEnableVertexAttribArray(attribIndex);
 	
 	//cleanup
@@ -136,7 +136,7 @@ int main() {
 		modelToWorld = glm::rotate(glm::identity<glm::mat4>(), rotation.y, glm::vec3(0, 1, 0));
 
 		//Sets up camera matrices
-		glm::mat4 view = glm::lookAtLH(glm::vec3(0.0f, 0.0f, -5.f), glm::vec3(0.0f, 0.0f, -4.f), glm::vec3(0.0f, 1.f, 0.0f));
+		glm::mat4 view = glm::lookAtLH(glm::vec3(-4.0f, 4.0f, -4.f), glm::vec3(-3.0f, 3.0f, -3.f), glm::vec3(0.0f, 1.f, 0.0f));
 		glm::mat4 projection = glm::perspectiveFovLH<GLfloat>(glm::pi<float>() / 3.0f, (float)WIDTH, (float)HEIGHT, 0.01f, 100.f);
 
 		//Clears the buffer
