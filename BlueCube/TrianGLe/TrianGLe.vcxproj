@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ExecutablePath>$(SolutionDir)include\glew-2.1.0\bin\Release\Win32;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(SolutionDir)include\glew-2.1.0\include;$(SolutionDir)include\glfw-3.2.1\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)include\glew-2.1.0\include;$(SolutionDir)include\glfw-3.2.1\include;$(SolutionDir)include\glm;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)include\glew-2.1.0\lib;$(SolutionDir)include\glfw-3.2.1\lib-vc2015;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
     <OutDir>$(SolutionDir)Z_DELETE\</OutDir>
@@ -80,18 +80,18 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ExecutablePath>$(SolutionDir)include\glew-2.1.0\bin\Release\Win32;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(SolutionDir)include\glew-2.1.0\include;$(SolutionDir)include\glfw-3.2.1\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)include\glew-2.1.0\include;$(SolutionDir)include\glfw-3.2.1\include;$(SolutionDir)include\glm;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)include\glew-2.1.0\lib;$(SolutionDir)include\glfw-3.2.1\lib-vc2015;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Z_DELETE\</OutDir>
     <IntDir>$(SolutionDir)Z_DELETE\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ExecutablePath>$(SolutionDir)include\glew-2.1.0\bin;$(VC_ExecutablePath_x64);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(FxCopDir);$(PATH);</ExecutablePath>
-    <IncludePath>$(SolutionDir)include\glew-2.1.0\include;$(SolutionDir)include\glfw-3.2.1\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)include\glew-2.1.0\include;$(SolutionDir)include\glfw-3.2.1\include;$(SolutionDir)include\glm;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ExecutablePath>$(SolutionDir)include\glew-2.1.0\bin;$(VC_ExecutablePath_x64);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(FxCopDir);$(PATH);</ExecutablePath>
-    <IncludePath>$(SolutionDir)include\glew-2.1.0\include;$(SolutionDir)include\glfw-3.2.1\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)include\glew-2.1.0\include;$(SolutionDir)include\glfw-3.2.1\include;$(SolutionDir)include\glm;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

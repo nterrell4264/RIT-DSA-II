@@ -1,4 +1,7 @@
-#include "shader.h"
+#include "shader.h"\
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 ///Based on the tutorial made in ATLAS.
 
@@ -79,11 +82,13 @@ int main() {
 	if (glewInit() != GLEW_OK)
 	{
 		std::cout << "Failed to initialize GLEW" << std::endl;
-
+		glfwTerminate();
+		std::cin.get();
+		_CrtDumpMemoryLeaks();
 		return EXIT_FAILURE;
 	}
 
-	//Shaders
+	///Shaders
 	GLuint shaderProgram = glCreateProgram();
 	//Vertex Shader
 	Shader *vs = new Shader();
@@ -96,14 +101,20 @@ int main() {
 
 	glLinkProgram(shaderProgram);
 
-	//Vertex setup
+	//GLM definitions
+	glm::vec3 rotation = glm::vec3(0, 0, 0);
+	glm::mat4 modelToWorld = glm::identity<glm::mat4>();
+
+	///Vertex setup
+	//VAO
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-
+	//VBO
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
+	
+	//
 	GLuint attribIndex = glGetAttribLocation(shaderProgram, "position");
 	glVertexAttribPointer(attribIndex, VERTICES, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
 	glEnableVertexAttribArray(attribIndex);
@@ -120,12 +131,29 @@ int main() {
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break; //Exit command
 
+		//Rotates cube
+		rotation.y += 0.001f;
+		modelToWorld = glm::rotate(glm::identity<glm::mat4>(), rotation.y, glm::vec3(0, 1, 0));
+
+		//Sets up camera matrices
+		glm::mat4 view = glm::lookAtLH(glm::vec3(0.0f, 0.0f, -5.f), glm::vec3(0.0f, 0.0f, -4.f), glm::vec3(0.0f, 1.f, 0.0f));
+		glm::mat4 projection = glm::perspectiveFovLH<GLfloat>(glm::pi<float>() / 3.0f, (float)WIDTH, (float)HEIGHT, 0.01f, 100.f);
+
 		//Clears the buffer
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(.25f, 0.7f, 0.6f, 1.0f);
 
-		//Draws and shade
-		glUseProgram(shaderProgram);
+		//Viewport calculations
+		glUseProgram(shaderProgram);//get location of the view matrix in the shader
+
+		GLuint viewMatLoc = glGetUniformLocation(shaderProgram, "viewMatrix");
+		glUniformMatrix4fv(viewMatLoc, 1, GL_FALSE, &(view[0][0]));
+		GLuint projectionMatLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
+		glUniformMatrix4fv(projectionMatLoc, 1, GL_FALSE, &(projection[0][0]));
+		GLuint modelToWorldLoc = glGetUniformLocation(shaderProgram, "modelToWorld");
+		glUniformMatrix4fv(modelToWorldLoc, 1, GL_FALSE, &(modelToWorld[0][0]));
+
+		//Renders
 		glBindVertexArray(vao);
 		glDrawArrays(GL_TRIANGLES, 0, VERTICES);
 
@@ -139,5 +167,6 @@ int main() {
 	//Cleanup
 	glDeleteBuffers(1, &vbo);
 	glfwTerminate();
+	_CrtDumpMemoryLeaks();
 	return EXIT_SUCCESS;
 }
