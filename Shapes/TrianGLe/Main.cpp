@@ -9,40 +9,44 @@
 #pragma region variables
 //Window data
 const GLint WIDTH = 800, HEIGHT = 600;
-GLuint vao;
-GLuint vbo;
+GLuint triVAO;
+GLuint triVBO;
+GLuint rectVAO;
+GLuint rectVBO;
 GLuint colorbuffer;
 
-//Shape data
-Shape* triangle;
-Shape* rectangle;
-Shape* circle;
+//Shape
+//Shape* triangle;
+GLfloat triVertices = 3;
+static const GLfloat triangle_data[] = {
+	0.0f, .5f, 0.0f,
+	.433f, 0.0f, 0.0f,
+	-.433f, 0.0f, 0.0f
+};
+
+GLfloat rectVertices = 4;
+static const GLfloat rectangle_data[] = {
+	-.75f, -.1f, 0.0f,
+	-.75f, .1f, 0.0f,
+	-.25f, .1f, 0.0f,
+	-.75f, -.1f, 0.0f,
+	-.25f, -.1f, 0.0f,
+	-.25f, .1f, 0.0f
+};
 #pragma endregion
 
-int main() {
-	//Defines shapes
-	triangle = new Shape();
-	triangle->SetVertices(1, new GLfloat[]{
-		0.0f, .25f, 0.0f,
-		.2165f, 0.0f, 0.0f,
-		-.2165f, 0.0f, 0.0f
-		});
-	rectangle = new Shape();
-	rectangle->SetVertices(2, new GLfloat[]{
-		-.25f, -.1f, 0.0f,
-		-.25f, .1f, 0.0f,
-		.25f, .1f, 0.0f,
-		-.25f, -.1f, 0.0f,
-		.25f, -.1f, 0.0f,
-		.25f, .1f, 0.0f
-		});
-	/*circle = new Shape();
-	circle->SetVertices(8, new GLfloat[]{
-		0.0f, .5f, 0.0f,
-		.433f, 0.0f, 0.0f,
-		-.433f, 0.0f, 0.0f
-		});*/
+void SetupVertexObjects(GLuint vao, GLuint vbo) {
+	//VAO
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	//VBO
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_data), triangle_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_data), rectangle_data, GL_STATIC_DRAW);
+}
 
+int main() {
 	//Initializes the GLFW
 	if (glfwInit() == GLFW_FALSE)
 	{
@@ -55,7 +59,7 @@ int main() {
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	//GLFW creation
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "A Cube", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Moving Shapes", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -90,28 +94,43 @@ int main() {
 	glLinkProgram(shaderProgram);
 
 	//GLM definitions
-	glm::vec3 rotation = glm::vec3(0, 0, 0);
 	glm::mat4 modelToWorld = glm::identity<glm::mat4>();
 
 	///Vertex setup
-	//VAO
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	//VBO
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	//Triangle
+	glGenVertexArrays(1, &triVAO);
+	glBindVertexArray(triVAO);
 	
-	//
+	glGenBuffers(1, &triVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, triVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_data), triangle_data, GL_STATIC_DRAW);
+	//Rectangle
+	glGenVertexArrays(1, &rectVAO);
+	glBindVertexArray(rectVAO);
+
+	glGenBuffers(1, &rectVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, rectVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_data), rectangle_data, GL_STATIC_DRAW);
+
+	//Position
 	GLuint attribIndex = glGetAttribLocation(shaderProgram, "position");
 	glVertexAttribPointer(attribIndex, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
 	glEnableVertexAttribArray(attribIndex);
-	
+
 	//cleanup
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	delete fs;
 	delete vs;
+
+	//Initializes shapes
+	/*triangle = new Shape();
+	triangle->SetVertices(1, new GLfloat[9]{
+		0.0f, .5f, 0.0f,
+		.433f, 0.0f, 0.0f,
+		-.433f, 0.0f, 0.0f
+		});
+	triangle->SetRender(&shaderProgram);*/
 	
 	while (!glfwWindowShouldClose(window)) //Draw loop
 	{
@@ -119,12 +138,8 @@ int main() {
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break; //Exit command
 
-		//Rotates cube
-		rotation.y += 0.001f;
-		modelToWorld = glm::rotate(glm::identity<glm::mat4>(), rotation.y, glm::vec3(0, 1, 0));
-
 		//Sets up camera matrices
-		glm::mat4 view = glm::lookAtLH(glm::vec3(-4.0f, 4.0f, -4.f), glm::vec3(-3.0f, 3.0f, -3.f), glm::vec3(0.0f, 1.f, 0.0f));
+		glm::mat4 view = glm::lookAtLH(glm::vec3(0.0f, 0.0f, -2.f), glm::vec3(0.0f, 0.0f, -1.f), glm::vec3(0.0f, 1.f, 0.0f));
 		glm::mat4 projection = glm::perspectiveFovLH<GLfloat>(glm::pi<float>() / 3.0f, (float)WIDTH, (float)HEIGHT, 0.01f, 100.f);
 
 		//Clears the buffer
@@ -141,11 +156,14 @@ int main() {
 		GLuint modelToWorldLoc = glGetUniformLocation(shaderProgram, "modelToWorld");
 		glUniformMatrix4fv(modelToWorldLoc, 1, GL_FALSE, &(modelToWorld[0][0]));
 
+		//glUseProgram(0);
+
 		//Renders
-		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, triangle->triCount * 3);
-		glDrawArrays(GL_TRIANGLES, 0, rectangle->triCount * 3);
-		//glDrawArrays(GL_TRIANGLES, 0, triangle->triCount * 3);
+		//triangle->Render();
+		glBindVertexArray(triVAO);
+		glDrawArrays(GL_TRIANGLES, 0, triVertices);
+		glBindVertexArray(rectVAO);
+		glDrawArrays(GL_TRIANGLES, 0, rectVertices);
 
 		//'clear' for next draw call
 		//glDisableVertexAttribArray(attribIndex);
@@ -155,7 +173,8 @@ int main() {
 		glfwSwapBuffers(window);
 	}
 	//Cleanup
-	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &triVBO);
+	glDeleteBuffers(1, &rectVBO);
 	glfwTerminate();
 	_CrtDumpMemoryLeaks();
 	return EXIT_SUCCESS;
