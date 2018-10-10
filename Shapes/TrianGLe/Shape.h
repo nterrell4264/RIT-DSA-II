@@ -9,14 +9,13 @@ public:
 	//Render variables
 	GLuint vao;
 	GLuint vbo;
-	GLuint* shaderProgram;
 	//Data
 	GLfloat triCount = 0;
 	GLfloat vertexCount = 0;
 	GLfloat* pointData = nullptr;
 
 	//Render functions
-	void SetRender(GLuint* shader);
+	void SetShader(GLuint shader);
 	void Render();
 	//Data-related functions
 	void SetVertices(GLfloat triNum, GLfloat* points);

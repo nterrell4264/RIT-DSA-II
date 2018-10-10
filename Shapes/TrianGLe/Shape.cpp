@@ -9,10 +9,7 @@ Shape::Shape()
 	//VBO
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(pointData), pointData, GL_STATIC_DRAW);
-	//Position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
-	glEnableVertexAttribArray(0);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertexCount * 3, pointData, GL_STATIC_DRAW);
 
 	//cleanup
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -20,6 +17,7 @@ Shape::Shape()
 }
 Shape::~Shape()
 {
+	glDeleteBuffers(1, &vbo);
 	delete[] pointData;
 }
 
@@ -37,17 +35,13 @@ void Shape::Translate(float x, float y, float z) {
 	}
 }
 
-void Shape::SetRender(GLuint* shader)
-{
-	shaderProgram = shader;
+void Shape::SetShader(GLuint shader) {
+	GLuint attribIndex = glGetAttribLocation(shader, "position");
+	glVertexAttribPointer(attribIndex, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
+	glEnableVertexAttribArray(attribIndex);
 }
-
 void Shape::Render() {
-	//Draws
-	glUseProgram(*shaderProgram);
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-	//Releases
-	glBindVertexArray(0);
-	glUseProgram(0);
+	//glBindVertexArray(0);
 }

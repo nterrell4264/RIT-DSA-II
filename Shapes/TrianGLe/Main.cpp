@@ -9,22 +9,22 @@
 #pragma region variables
 //Window data
 const GLint WIDTH = 800, HEIGHT = 600;
-GLuint triVAO;
+/*GLuint triVAO;
 GLuint triVBO;
 GLuint rectVAO;
-GLuint rectVBO;
+GLuint rectVBO;*/
 GLuint colorbuffer;
 
 //Shape
-//Shape* triangle;
-GLfloat triVertices = 3;
+Shape* triangle;
+/*GLfloat triVertices = 3;
 static const GLfloat triangle_data[] = {
 	0.0f, .5f, 0.0f,
 	.433f, 0.0f, 0.0f,
 	-.433f, 0.0f, 0.0f
 };
 
-GLfloat rectVertices = 4;
+GLfloat rectVertices = 6;
 static const GLfloat rectangle_data[] = {
 	-.75f, -.1f, 0.0f,
 	-.75f, .1f, 0.0f,
@@ -32,7 +32,7 @@ static const GLfloat rectangle_data[] = {
 	-.75f, -.1f, 0.0f,
 	-.25f, -.1f, 0.0f,
 	-.25f, .1f, 0.0f
-};
+};*/
 #pragma endregion
 
 void SetupVertexObjects(GLuint vao, GLuint vbo) {
@@ -42,8 +42,8 @@ void SetupVertexObjects(GLuint vao, GLuint vbo) {
 	//VBO
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_data), triangle_data, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_data), rectangle_data, GL_STATIC_DRAW);
+	/*glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_data), triangle_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_data), rectangle_data, GL_STATIC_DRAW);*/
 }
 
 int main() {
@@ -97,11 +97,11 @@ int main() {
 	glm::mat4 modelToWorld = glm::identity<glm::mat4>();
 
 	///Vertex setup
-	//Triangle
-	glGenVertexArrays(1, &triVAO);
+	/*//Triangle
+	glGenVertexArrays(2, &triVAO);
 	glBindVertexArray(triVAO);
 	
-	glGenBuffers(1, &triVBO);
+	glGenBuffers(2, &triVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, triVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_data), triangle_data, GL_STATIC_DRAW);
 	//Rectangle
@@ -121,16 +121,16 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	delete fs;
-	delete vs;
+	delete vs;*/
 
 	//Initializes shapes
-	/*triangle = new Shape();
+	triangle = new Shape();
 	triangle->SetVertices(1, new GLfloat[9]{
 		0.0f, .5f, 0.0f,
 		.433f, 0.0f, 0.0f,
 		-.433f, 0.0f, 0.0f
 		});
-	triangle->SetRender(&shaderProgram);*/
+	triangle->SetShader(shaderProgram);
 	
 	while (!glfwWindowShouldClose(window)) //Draw loop
 	{
@@ -159,11 +159,11 @@ int main() {
 		//glUseProgram(0);
 
 		//Renders
-		//triangle->Render();
-		glBindVertexArray(triVAO);
+		triangle->Render();
+		/*glBindVertexArray(triVAO);
 		glDrawArrays(GL_TRIANGLES, 0, triVertices);
-		glBindVertexArray(rectVAO);
-		glDrawArrays(GL_TRIANGLES, 0, rectVertices);
+		/*glBindVertexArray(rectVAO);
+		glDrawArrays(GL_TRIANGLES, 0, rectVertices);*/
 
 		//'clear' for next draw call
 		//glDisableVertexAttribArray(attribIndex);
@@ -173,8 +173,8 @@ int main() {
 		glfwSwapBuffers(window);
 	}
 	//Cleanup
-	glDeleteBuffers(1, &triVBO);
-	glDeleteBuffers(1, &rectVBO);
+	/*glDeleteBuffers(1, &triVBO);
+	glDeleteBuffers(1, &rectVBO);*/
 	glfwTerminate();
 	_CrtDumpMemoryLeaks();
 	return EXIT_SUCCESS;
