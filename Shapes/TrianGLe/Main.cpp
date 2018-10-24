@@ -9,44 +9,16 @@
 #pragma region variables
 //Window data
 const GLint WIDTH = 800, HEIGHT = 600;
-/*GLuint triVAO;
-GLuint triVBO;
-GLuint rectVAO;
-GLuint rectVBO;*/
 GLuint colorbuffer;
 
 //Shape
 Shape* triangle;
-/*GLfloat triVertices = 3;
-static const GLfloat triangle_data[] = {
-	0.0f, .5f, 0.0f,
-	.433f, 0.0f, 0.0f,
-	-.433f, 0.0f, 0.0f
-};
-
-GLfloat rectVertices = 6;
-static const GLfloat rectangle_data[] = {
-	-.75f, -.1f, 0.0f,
-	-.75f, .1f, 0.0f,
-	-.25f, .1f, 0.0f,
-	-.75f, -.1f, 0.0f,
-	-.25f, -.1f, 0.0f,
-	-.25f, .1f, 0.0f
-};*/
+Shape* rectangle;
+Shape* circle;
 #pragma endregion
 
-void SetupVertexObjects(GLuint vao, GLuint vbo) {
-	//VAO
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	//VBO
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	/*glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_data), triangle_data, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_data), rectangle_data, GL_STATIC_DRAW);*/
-}
-
 int main() {
+	#pragma region GL Stuff
 	//Initializes the GLFW
 	if (glfwInit() == GLFW_FALSE)
 	{
@@ -95,48 +67,55 @@ int main() {
 
 	//GLM definitions
 	glm::mat4 modelToWorld = glm::identity<glm::mat4>();
-
-	///Vertex setup
-	/*//Triangle
-	glGenVertexArrays(2, &triVAO);
-	glBindVertexArray(triVAO);
-	
-	glGenBuffers(2, &triVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, triVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_data), triangle_data, GL_STATIC_DRAW);
-	//Rectangle
-	glGenVertexArrays(1, &rectVAO);
-	glBindVertexArray(rectVAO);
-
-	glGenBuffers(1, &rectVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, rectVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_data), rectangle_data, GL_STATIC_DRAW);
-
-	//Position
-	GLuint attribIndex = glGetAttribLocation(shaderProgram, "position");
-	glVertexAttribPointer(attribIndex, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
-	glEnableVertexAttribArray(attribIndex);
-
-	//cleanup
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	delete fs;
-	delete vs;*/
-
-	//Initializes shapes
+	#pragma endregion
+	#pragma region Shapes
+	//Triangle
 	triangle = new Shape();
 	triangle->SetVertices(1, new GLfloat[9]{
 		0.0f, .5f, 0.0f,
 		.433f, 0.0f, 0.0f,
 		-.433f, 0.0f, 0.0f
 		});
-	triangle->SetShader(shaderProgram);
-	
+	triangle->InitializeGL(shaderProgram);
+	//Rectangle
+	rectangle = new Shape();
+	rectangle->SetVertices(2, new GLfloat[18]{
+		-1.f, -.2f, 0.0f,
+		-1.f, .2f, 0.0f,
+		-.5f, .2f, 0.0f,
+		-1.f, -.2f, 0.0f,
+		-.5f, -.2f, 0.0f,
+		-.5f, .2f, 0.0f
+		});
+	rectangle->InitializeGL(shaderProgram);
+	//Circle
+	circle = new Shape();
+	const int parts = 90;
+	GLfloat circleVertices[parts * 9];
+	for (int i = 0; i < parts; i++) { //Creates 90 triangles around in a circle
+		circleVertices[i * 9] = .5f;
+		circleVertices[i * 9 + 1] = -.5f;
+		circleVertices[i * 9 + 2] = 0.f;
+		circleVertices[i * 9 + 3] = .5f + cos(i * 2 * 3.14159f / parts) / 4;
+		circleVertices[i * 9 + 4] = -.5f + sin(i * 2 * 3.14159f / parts) / 4;
+		circleVertices[i * 9 + 5] = 0.f;
+		circleVertices[i * 9 + 6] = .5f + cos((i+1) * 2 * 3.14159f / parts) / 4;
+		circleVertices[i * 9 + 7] = -.5f + sin((i+1) * 2 * 3.14159f / parts) / 4;
+		circleVertices[i * 9 + 8] = 0.f;
+	}
+	circle->SetVertices(parts, circleVertices);
+	circle->InitializeGL(shaderProgram);
+	#pragma endregion
 	while (!glfwWindowShouldClose(window)) //Draw loop
 	{
 		//Gets input
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break; //Exit command
+
+		//Updates
+		triangle->Translate(.01f, .01f);
+		rectangle->Translate(.01f, .01f);
+		circle->Translate(.01f, .01f);
 
 		//Sets up camera matrices
 		glm::mat4 view = glm::lookAtLH(glm::vec3(0.0f, 0.0f, -2.f), glm::vec3(0.0f, 0.0f, -1.f), glm::vec3(0.0f, 1.f, 0.0f));
@@ -156,14 +135,10 @@ int main() {
 		GLuint modelToWorldLoc = glGetUniformLocation(shaderProgram, "modelToWorld");
 		glUniformMatrix4fv(modelToWorldLoc, 1, GL_FALSE, &(modelToWorld[0][0]));
 
-		//glUseProgram(0);
-
 		//Renders
 		triangle->Render();
-		/*glBindVertexArray(triVAO);
-		glDrawArrays(GL_TRIANGLES, 0, triVertices);
-		/*glBindVertexArray(rectVAO);
-		glDrawArrays(GL_TRIANGLES, 0, rectVertices);*/
+		rectangle->Render();
+		circle->Render();
 
 		//'clear' for next draw call
 		//glDisableVertexAttribArray(attribIndex);
@@ -173,9 +148,10 @@ int main() {
 		glfwSwapBuffers(window);
 	}
 	//Cleanup
-	/*glDeleteBuffers(1, &triVBO);
-	glDeleteBuffers(1, &rectVBO);*/
 	glfwTerminate();
+	delete triangle;
+	delete rectangle;
+	delete circle;
 	_CrtDumpMemoryLeaks();
 	return EXIT_SUCCESS;
 }

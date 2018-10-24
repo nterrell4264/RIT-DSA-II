@@ -1,6 +1,9 @@
 #pragma once
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
+#include <vector>
+using namespace std;
+
 class Shape
 {
 public:
@@ -11,14 +14,14 @@ public:
 	GLuint vbo;
 	//Data
 	GLfloat triCount = 0;
-	GLfloat vertexCount = 0;
-	GLfloat* pointData = nullptr;
+	GLfloat coordCount = 0;
+	vector<GLfloat> pointData;
 
 	//Render functions
-	void SetShader(GLuint shader);
+	void InitializeGL(GLuint shader);
 	void Render();
 	//Data-related functions
-	void SetVertices(GLfloat triNum, GLfloat* points);
-	void Translate(float x, float y, float z);
+	void SetVertices(GLfloat triNum, GLfloat points[]);
+	void Translate(float x, float y, float z = 0);
 };
 
