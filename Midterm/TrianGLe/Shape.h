@@ -26,5 +26,6 @@ public:
 	//Data-related functions
 	void SetVertices(GLfloat triNum, GLfloat points[]);
 	void Translate(float dx = 0, float dy = 0, float dz = 0);
+	void Rotate(float dx = 0, float dy = 0, float dz = 0);
 };
 
