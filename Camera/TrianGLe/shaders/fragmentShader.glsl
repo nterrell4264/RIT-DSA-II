@@ -10,5 +10,5 @@ out vec4 color;
 //entry point for the fragment shader
 void main(void)
 {
-	color = vec4(0, 0, 1, 1);
+	color = vec4(.75, .75, 0, 1);
 }

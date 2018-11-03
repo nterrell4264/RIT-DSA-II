@@ -1,7 +1,10 @@
 #include "Shape.h"
 
-Shape::Shape()
+Shape::Shape(float xPos, float yPos, float zPos)
 {
+	position = vec3(xPos, yPos, xPos);
+	rotation = vec3(0);
+	worldMatrix = glm::identity<mat4>();
 }
 Shape::~Shape()
 {
@@ -15,12 +18,28 @@ void Shape::SetVertices(GLfloat triNum, GLfloat points[])
 	pointData = vector<GLfloat>(coordCount);
 	memcpy(&(pointData[0]), points, coordCount * sizeof(GLfloat));
 }
-void Shape::Translate(float x, float y, float z) {
-	for (int i = 0; i < coordCount; i += 3) { //Loops through every vertex
-		pointData[i] += x;
-		pointData[i + 1] += y;
-		pointData[i + 2] += z;
-	}
+
+void Shape::Translate(float dx, float dy, float dz) {
+	position += vec3(dx,dy,dz);
+}
+void Shape::Rotate(float rx, float ry, float rz)
+{
+	rotation += vec3(rx, ry, rz);
+}
+void Shape::Update() {
+	if (spinning) Rotate(0, .005f, 0);
+	worldMatrix = glm::identity<glm::mat4>();
+
+	worldMatrix = translate(worldMatrix, position);
+	worldMatrix = rotate(worldMatrix, rotation.x, glm::vec3(1.f, 0.f, 0.f));
+	worldMatrix = rotate(worldMatrix, rotation.y, glm::vec3(0.f, 1.f, 0.f));
+	worldMatrix = rotate(worldMatrix, rotation.z, glm::vec3(0.f, 0.f, 1.f));
+}
+
+void Shape::Reset() {
+	rotation = vec3(0);
+	spinning = false;
+	worldMatrix = glm::identity<mat4>();
 }
 
 void Shape::InitializeGL(GLuint shader) {
