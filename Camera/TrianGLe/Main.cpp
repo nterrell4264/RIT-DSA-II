@@ -26,6 +26,9 @@ int main() {
 	glfwMakeContextCurrent(window);
 	glViewport(0, 0, WIDTH, HEIGHT);
 
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, &mouseWrapper);
+
 	//GLEW
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
@@ -50,11 +53,12 @@ int main() {
 
 	glLinkProgram(shaderProgram);
 
-	//Camera and panning
-	camera = new Camera(&shaderProgram, window);
-
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPosCallback(window, camera->mouseMove);
+	//Cameras
+	cameras = new Camera*[3];
+	cameras[0] = new Camera(&shaderProgram, window);
+	cameras[1] = new Camera(&shaderProgram, window, vec3(10.f,5.f,0.f));
+	cameras[2] = new Camera(&shaderProgram, window, vec3(0.f,-5.f,0.f));
+	mainCamera = cameras[0];
 	#pragma endregion
 
 	#pragma region Shapes
@@ -70,9 +74,13 @@ int main() {
 		//General input
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break; //Exit command
+		if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_C) != GLFW_PRESS) { //Switch cameras
+			camIndex = (camIndex + 1) % 3;
+			mainCamera = cameras[camIndex];
+		}
 
 		//Camera input/recalculation
-		camera->Update();
+		mainCamera->Update();
 
 		//Clears the buffer
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -80,8 +88,7 @@ int main() {
 
 		//Mesh function
 		for (int i = 0; i < 8; i++) {
-			rings[i]->Update();
-			rings[i]->Render();
+			rings[i]->mesh->Render();
 		}
 
 		//'clear' for next draw call
@@ -91,51 +98,66 @@ int main() {
 
 		glfwSwapBuffers(window);
 	}
+
 	//Cleanup
 	glfwTerminate();
+
 	delete[] rings;
-	delete camera;
+	delete ringMesh;
+
+	delete[] cameras;
+	mainCamera = nullptr;
+
 	delete vs;
 	delete fs;
 	_CrtDumpMemoryLeaks();
+
 	return EXIT_SUCCESS;
 	#pragma endregion
 }
 
 Shape* MakeRing(float originX, float originY, float originZ, float ringRadius, float ringWidth, GLuint shader) {
 	Shape* ring = new Shape(originX, originY, originZ);
-	GLfloat ringVertices[parts * parts * 18];
-	for (int i = 0; i < parts; i++) {
-		for (int j = 0; j < parts; j++) {
-			//Triangle between two faces on current angle and one on next angle.
-			//Vertex 1: current point
-			ringVertices[(i * parts + j) * 18] = originX + cos(i * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 1] = originY + sin(i * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 2] = originZ + sin(j * 2 * 3.14159f / parts) * ringWidth;
-			//Vertex 2: equivalent point on next circle
-			ringVertices[(i * parts + j) * 18 + 3] = originX + cos((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 4] = originY + sin((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 5] = originZ + sin(j * 2 * 3.14159f / parts) * ringWidth;
-			//Vertex 3: next point on next circle
-			ringVertices[(i * parts + j) * 18 + 6] = originX + cos((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 7] = originY + sin((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 8] = originZ + sin((j + 1) * 2 * 3.14159f / parts) * ringWidth;
-			//Triangle between two faces on current angle and one on next angle.
-			//Vertex 1: current point
-			ringVertices[(i * parts + j) * 18 + 9] = originX + cos(i * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 10] = originY + sin(i * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 11] = originZ + sin(j * 2 * 3.14159f / parts) * ringWidth;
-			//Vertex 2: next point on this circle
-			ringVertices[(i * parts + j) * 18 + 12] = originX + cos(i * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 13] = originY + sin(i * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 14] = originZ + sin((j + 1) * 2 * 3.14159f / parts) * ringWidth;
-			//Vertex 3: next point on next circle
-			ringVertices[(i * parts + j) * 18 + 15] = originX + cos((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 16] = originY + sin((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
-			ringVertices[(i * parts + j) * 18 + 17] = originZ + sin((j + 1) * 2 * 3.14159f / parts) * ringWidth;
+	if (ringMesh == nullptr) { //Creates one mesh (pun not intended) for all rings
+		GLfloat ringVertices[parts * parts * 18];
+		for (int i = 0; i < parts; i++) {
+			for (int j = 0; j < parts; j++) {
+				//Triangle between two faces on current angle and one on next angle.
+				//Vertex 1: current point
+				ringVertices[(i * parts + j) * 18] = originX + cos(i * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 1] = originY + sin(i * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 2] = originZ + sin(j * 2 * 3.14159f / parts) * ringWidth;
+				//Vertex 2: equivalent point on next circle
+				ringVertices[(i * parts + j) * 18 + 3] = originX + cos((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 4] = originY + sin((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 5] = originZ + sin(j * 2 * 3.14159f / parts) * ringWidth;
+				//Vertex 3: next point on next circle
+				ringVertices[(i * parts + j) * 18 + 6] = originX + cos((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 7] = originY + sin((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 8] = originZ + sin((j + 1) * 2 * 3.14159f / parts) * ringWidth;
+				//Triangle between two faces on current angle and one on next angle.
+				//Vertex 1: current point
+				ringVertices[(i * parts + j) * 18 + 9] = originX + cos(i * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 10] = originY + sin(i * 2 * 3.14159f / parts) * (ringRadius + cos(j * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 11] = originZ + sin(j * 2 * 3.14159f / parts) * ringWidth;
+				//Vertex 2: next point on this circle
+				ringVertices[(i * parts + j) * 18 + 12] = originX + cos(i * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 13] = originY + sin(i * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 14] = originZ + sin((j + 1) * 2 * 3.14159f / parts) * ringWidth;
+				//Vertex 3: next point on next circle
+				ringVertices[(i * parts + j) * 18 + 15] = originX + cos((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 16] = originY + sin((i + 1) * 2 * 3.14159f / parts) * (ringRadius + cos((j + 1) * 2 * 3.14159f / parts) * ringWidth);
+				ringVertices[(i * parts + j) * 18 + 17] = originZ + sin((j + 1) * 2 * 3.14159f / parts) * ringWidth;
+			}
 		}
+		ringMesh->SetVertices(parts * parts * 2, ringVertices);
+		ringMesh->InitializeGL(shader);
 	}
-	ring->SetVertices(parts * parts * 2, ringVertices);
-	ring->InitializeGL(shader);
+	ring->mesh = ringMesh;
 	return ring;
+}
+
+void mouseWrapper(GLFWwindow * window, double xpos, double ypos)
+{
+	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) mainCamera->mouseMove(xpos, ypos);
 }

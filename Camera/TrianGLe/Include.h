@@ -10,5 +10,6 @@ using namespace glm;
 using namespace std;
 
 #include "shader.h"
+#include "Mesh.h"
 #include "Shape.h"
 #include "Camera.h"
