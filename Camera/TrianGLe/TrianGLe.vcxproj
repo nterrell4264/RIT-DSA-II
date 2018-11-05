@@ -165,11 +165,15 @@ copy "$(SolutionDir)include\glew-2.1.0\bin\Release\Win32\*.*" "$(SolutionDir)_Bi
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="Shape.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Include.h" />
+    <ClInclude Include="Main.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="Shape.h" />
   </ItemGroup>

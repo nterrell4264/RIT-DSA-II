@@ -55,17 +55,26 @@ int main() {
 	glm::mat4 modelToWorld = glm::identity<glm::mat4>();
 	#pragma endregion
 
-	#pragma region Shapes
-	rings = new Shape*[8]();
+	#pragma region Shapes and Spinning
+	rings = new Shape*[ringCount]();
 	rings[0] = MakeRing(0.f, 0.f, 0.f, .5f, .1f, shaderProgram);
+	for(int i = 1; i < ringCount; i++)
+		rings[i] = MakeRing(rand() % 11 - 5, rand() % 7 - 3, rand() % 11 - 5, .5f, .1f, shaderProgram);
+
+	spinner = Spinner(/*rings, ringCount*/); //object array is broken, this prevents data leaks
 	#pragma endregion
-	while (!glfwWindowShouldClose(window)) //Draw loop
+
+	#pragma region Draw loop
+	while (!glfwWindowShouldClose(window))//Draw loop
 	{
-		//Gets input
+		//General input
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break; //Exit command
+		//if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) spinner.StartSpin(); //Spin command
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) spinner.SpinOff(rings, ringCount); //Simple spin command
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) spinner.StopSpin(rings, ringCount); //Stop spin command
 
-		//Rotates scene
+		//Scene rotation
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) rotation.y += 0.01f;
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) rotation.y -= 0.01f;
 		modelToWorld = glm::rotate(glm::identity<glm::mat4>(), rotation.y, glm::vec3(0, 1, 0));
@@ -88,11 +97,11 @@ int main() {
 		GLuint modelToWorldLoc = glGetUniformLocation(shaderProgram, "modelToWorld");
 		glUniformMatrix4fv(modelToWorldLoc, 1, GL_FALSE, &(modelToWorld[0][0]));
 
-		//Renders
-		rings[0]->Render();
-		/*for (int i = 0; i < 8; i++) {
+		//Mesh function
+		for (int i = 0; i < 8; i++) {
+			rings[i]->Update();
 			rings[i]->Render();
-		}*/
+		}
 
 		//'clear' for next draw call
 		//glDisableVertexAttribArray(attribIndex);
@@ -106,6 +115,7 @@ int main() {
 	delete[] rings;
 	_CrtDumpMemoryLeaks();
 	return EXIT_SUCCESS;
+	#pragma endregion
 }
 
 Shape* MakeRing(float originX, float originY, float originZ, float ringRadius, float ringWidth, GLuint shader) {

@@ -1,27 +1,22 @@
 #pragma once
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
-#include <vector>
-using namespace std;
+#include "Include.h"
 
 class Shape
 {
 public:
-	Shape();
+	Shape(float xPos = 0, float yPos = 0, float zPos = 0);
 	~Shape();
-	//Render variables
-	GLuint vao;
-	GLuint vbo;
-	//Data
-	GLfloat triCount = 0;
-	GLfloat coordCount = 0;
-	vector<GLfloat> pointData;
 
-	//Render functions
-	void InitializeGL(GLuint shader);
-	void Render();
+	//Data
+	vec3 position;
+	vec3 rotation;
+
+	Mesh* mesh;
+
 	//Data-related functions
-	void SetVertices(GLfloat triNum, GLfloat points[]);
-	void Translate(float x, float y, float z = 0);
+	void Update();
+	void Translate(float dx = 0.f, float dy = 0.f, float dz = 0.f);
+	void Rotate(float rx = 0.f, float ry = 0.f, float rz = 0.f);
+	void Reset();
 };
 
