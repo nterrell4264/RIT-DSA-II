@@ -58,18 +58,14 @@ int main() {
 	#pragma region Shapes
 	rings = new Shape*[8]();
 	rings[0] = MakeRing(0.f, 0.f, 0.f, .5f, .1f, shaderProgram);
-	for (int i = 1; i < 8; i++) {
-		rings[i] = MakeRing(rand() % 10 - 5, rand() % 6 - 5, rand() % 10 - 5, .5f, .1f, shaderProgram);
-	}
 	#pragma endregion
 	while (!glfwWindowShouldClose(window)) //Draw loop
 	{
-		//General input
+		//Gets input
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break; //Exit command
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) ; //Start animation
 
-		//Scene rotation
+		//Rotates scene
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) rotation.y += 0.01f;
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) rotation.y -= 0.01f;
 		modelToWorld = glm::rotate(glm::identity<glm::mat4>(), rotation.y, glm::vec3(0, 1, 0));
@@ -93,9 +89,10 @@ int main() {
 		glUniformMatrix4fv(modelToWorldLoc, 1, GL_FALSE, &(modelToWorld[0][0]));
 
 		//Renders
-		for (int i = 0; i < 8; i++) {
+		rings[0]->Render();
+		/*for (int i = 0; i < 8; i++) {
 			rings[i]->Render();
-		}
+		}*/
 
 		//'clear' for next draw call
 		//glDisableVertexAttribArray(attribIndex);

@@ -166,13 +166,11 @@ copy "$(SolutionDir)include\glew-2.1.0\bin\Release\Win32\*.*" "$(SolutionDir)_Bi
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="Shape.cpp" />
-    <ClCompile Include="Spinner.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="Shape.h" />
-    <ClInclude Include="Spinner.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragmentShader.glsl" />
