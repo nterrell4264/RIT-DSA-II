@@ -9,10 +9,11 @@ GLuint colorbuffer;
 Camera** cameras;
 Camera* mainCamera;
 int camIndex = 0;
+bool camKeyPressed = false;
 
 //Shape stuff
 Shape** rings;
-Mesh* ringMesh = nullptr;
+//Mesh* ringMesh = nullptr;
 const int ringCount = 10;
 const int parts = 16;
 

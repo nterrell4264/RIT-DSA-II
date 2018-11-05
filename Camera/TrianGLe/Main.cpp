@@ -74,9 +74,15 @@ int main() {
 		//General input
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break; //Exit command
-		if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_C) != GLFW_PRESS) { //Switch cameras
-			camIndex = (camIndex + 1) % 3;
-			mainCamera = cameras[camIndex];
+		if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) { //Switch cameras
+			if (!camKeyPressed) {
+				camIndex = (camIndex + 1) % 3;
+				mainCamera = cameras[camIndex];
+			}
+			camKeyPressed = true;
+		}
+		else {
+			camKeyPressed = false;
 		}
 
 		//Camera input/recalculation
@@ -88,7 +94,7 @@ int main() {
 
 		//Mesh function
 		for (int i = 0; i < 8; i++) {
-			rings[i]->mesh->Render();
+			rings[i]->Render();
 		}
 
 		//'clear' for next draw call
@@ -103,7 +109,7 @@ int main() {
 	glfwTerminate();
 
 	delete[] rings;
-	delete ringMesh;
+	//delete ringMesh;
 
 	delete[] cameras;
 	mainCamera = nullptr;
@@ -118,7 +124,7 @@ int main() {
 
 Shape* MakeRing(float originX, float originY, float originZ, float ringRadius, float ringWidth, GLuint shader) {
 	Shape* ring = new Shape(originX, originY, originZ);
-	if (ringMesh == nullptr) { //Creates one mesh (pun not intended) for all rings
+	//if (ringMesh == nullptr) { //Creates one mesh (pun not intended) for all rings
 		GLfloat ringVertices[parts * parts * 18];
 		for (int i = 0; i < parts; i++) {
 			for (int j = 0; j < parts; j++) {
@@ -150,10 +156,9 @@ Shape* MakeRing(float originX, float originY, float originZ, float ringRadius, f
 				ringVertices[(i * parts + j) * 18 + 17] = originZ + sin((j + 1) * 2 * 3.14159f / parts) * ringWidth;
 			}
 		}
-		ringMesh->SetVertices(parts * parts * 2, ringVertices);
-		ringMesh->InitializeGL(shader);
-	}
-	ring->mesh = ringMesh;
+		ring->SetVertices(parts * parts * 2, ringVertices);
+		ring->InitializeGL(shader);
+	//}
 	return ring;
 }
 
